@@ -79,11 +79,3 @@
                 <!-- <a href="" data-ma-action="nk-login-switch" data-ma-block="#l-forget-password"><i>?</i> <span>Forgot Password</span></a> -->
             </div>
         </div>
-        <img id="loading_gif" width="100" src="<?= base_url(); ?>/assets/img/loading.gif">
-
-        <style type="text/css">
-            #loading_gif
-            {
-                display: none;
-            }
-        </style>

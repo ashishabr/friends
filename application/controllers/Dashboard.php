@@ -27,20 +27,22 @@ class Dashboard extends CI_Controller
     public function userprofile($uid)
     {
         $session = $this->load->library('session');
-        // $uid = $this->session->userdata('uid');
+        $u_id = $this->session->userdata('uid');
         $data['main_content'] = 'pages/userprofile';
         $datas = [
             'user_id' => $uid,
         ];
         $user = $this->Logindb->get_user($datas);
         $data['userdata'] = $user;
-        if ($user->friends == 0) 
+
+        $myArray = explode(',', $user->friends);
+        if(in_array($u_id, $myArray))
         {
-            $data['addedfrnd'] = 0;
+            $data['addedfrnd'] = 1;
         }
         else
         {
-            $data['addedfrnd'] = 1;
+            $data['addedfrnd'] = 0;
         }
 
         $this->load->view('layout/layout',$data);
@@ -110,6 +112,7 @@ class Dashboard extends CI_Controller
                 }
 
                 $perc = ($flag * 100)/4;
+                // echo $userval->user_name."_".$perc."-".$flag.":";
                 if ($perc >= 50) 
                 {
                     $arr[$i]['data'] = $userval;
@@ -117,6 +120,7 @@ class Dashboard extends CI_Controller
                 }
                 $i++;
             }
+            // die();
             $data['userdata'] = $arr;
         }
         else

@@ -15,7 +15,6 @@ class Login extends CI_Controller {
 	{
         $session = $this->load->library('session');
         $uid = $this->session->userdata('uid');
-        // echo $uid;
         if ($uid != null) 
         {
             redirect('dashboard');
@@ -25,11 +24,16 @@ class Login extends CI_Controller {
     	if(isset($reg_user))
     	{
     		$createuser = $this->RegisterUser();
-    		if ($createuser) 
+    		if ($createuser == 1) 
     		{
     			redirect('dashboard');
     		}
-            else{
+            elseif ($createuser == 3) 
+            {
+                $data['user_check'] = 3;
+            }
+            else
+            {
                 $data['user_check'] = 2;
             }
     	}
@@ -39,7 +43,6 @@ class Login extends CI_Controller {
     		if ($loginuser) 
     		{
                 redirect('dashboard');
-    			// return redirect()->to('/dashboard');
     		}
             else
             {
@@ -48,13 +51,11 @@ class Login extends CI_Controller {
     	}
     	$data['login_content'] = 'user/login_content';
     	$data['register_content'] = 'user/register_content';
-        // return view('layout/login',$data);
         $this->load->view('layout/login',$data);
     }
 
     public function LoginUser()
     {
-    	// $session = $this->load->library('session');
         $rname = $this->input->post('lemail');
         $rpass = $this->input->post('lpass');
         $pass = base64_encode($rpass);
@@ -63,8 +64,6 @@ class Login extends CI_Controller {
             'user_pass'  => $pass,
         ];
         $user = $this->Logindb->get_user($data);
-        // echo $user->user_id;
-        // die();
         if ($user) 
         {
             $this->session->set_userdata('uid', $user->user_id);
@@ -81,7 +80,7 @@ class Login extends CI_Controller {
 	public function RegisterUser(){
 		$data['user_name'] = $this->input->post('user_name');
 		$data['user_email'] = $mail = $this->input->post('user_email');
-        $data['user_country'] = $mail = $this->input->post('user_country');
+        $data['user_country'] = $this->input->post('user_country');
 		$pass = $this->input->post('user_pass');
 		$data['user_pass'] = base64_encode($pass);
 		$data['dob'] = date('Y-m-d',strtotime($this->input->post('dob')));
@@ -92,34 +91,38 @@ class Login extends CI_Controller {
     	$data['fav_actor'] = $this->input->post('fav_actor');
         
 		 $datas = [
-            'user_name' => $this->input->post('user_name'),
             'user_email'  => $mail,
         ];
-        
-		$userchk = $this->Logindb->check_user($datas);
-        if ($userchk) 
+        if ($data['user_name'] == "" || $data['user_email'] == "" || $data['user_country'] == "" || $pass == "" || $data['dob'] == "" || $data['user_gender'] == "" || $data['user_country'] == "" || $data['designation'] == "" || $data['fav_color'] == "" || $data['fav_actor'] == "") 
         {
-            return false;
+            return 3;
+        }
+		$userchk = $this->Logindb->check_user($datas);
+        if ($userchk == 1) 
+        {
+            return 0;
         }
         else
         {   
             $img_upload = $this->image_upload();
-            // print_r($img_upload);
-            // die();
-            $image = $img_upload['data']['file_name'];
-            $data['user_image'] = "uploads/".$image;
-
-            $user = $this->Logindb->add_user($data);
-            $this->session->set_userdata('uid', $user);
-
-            if ($user) 
+            if ($img_upload['status'] != 0) 
             {
-                return true;
+                $image = $img_upload['data']['file_name'];
+                $data['user_image'] = "uploads/".$image;
+
+                $user = $this->Logindb->add_user($data);
+                $this->session->set_userdata('uid', $user);
+
+                if ($user) 
+                {
+                    return 1;
+                }
+                else
+                {
+                    return 0;
+                }
             }
-            else
-            {
-                return false;
-            }
+            
         }
 		$this->Logindb->add_user($data);
 		$session = array('success'=>'User has been created!');
@@ -144,7 +147,14 @@ class Login extends CI_Controller {
 	}
 	public function check_user($mail){
 		$user = $this->Logindb->check_user($mail);
-		return $user;
+        if ($user) 
+        {
+            echo 1;
+        }
+        else
+        {
+            echo 0;
+        }
 	}
     public function logout()
     {
